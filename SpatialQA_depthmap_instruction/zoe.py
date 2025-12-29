@@ -16,20 +16,24 @@ def zoe_run(zoe_model,img_path,save_path):
     depth = zoe_model.infer_pil(image)
     return save_raw_16bit(depth, save_path)
 
-def zoe_from_json(json_file,img_dir,save_dir):
+def zoe_from_json(json_file,img_dir,save_dir,zoe_model):
     with open(json_file, 'r') as file:
-            data = json.load(file)
+        data = json.load(file)
     os.makedirs(save_dir,exist_ok=True)
 
     for dt in tqdm(data, desc="Processing"):
-        if type(dt['image']) is list:
+        if isinstance(dt['image'], (list, tuple)):
             img_name = dt['image'][0].split('/')[-1] # maybe png, jpg, or ...
         else:
             img_name = dt['image'].split('/')[-1] # maybe png, jpg, or ...
         img_path = os.path.join(img_dir,img_name)
         img_name = img_name.split('.')[0]+'.png' # force png
         save_path = os.path.join(save_dir,img_name)
-        zoe(zoe_model,img_path,save_path)
+        if os.path.exists(save_path):
+            continue
+        if not os.path.exists(img_path):
+            continue
+        zoe_run(zoe_model,img_path,save_path)
 
 def zoe_dir(img_dir,save_dir,zoe_model,chunk=0,total_chunk=0,total_img=0):
     os.makedirs(save_dir,exist_ok=True)
