@@ -22,13 +22,15 @@ def zoe_from_json(json_file,img_dir,save_dir,zoe_model):
     os.makedirs(save_dir,exist_ok=True)
 
     for dt in tqdm(data, desc="Processing"):
-        if type(dt['image']) is list:
+        if isinstance(dt['image'], (list, tuple)):
             img_name = dt['image'][0].split('/')[-1] # maybe png, jpg, or ...
         else:
             img_name = dt['image'].split('/')[-1] # maybe png, jpg, or ...
         img_path = os.path.join(img_dir,img_name)
         img_name = img_name.split('.')[0]+'.png' # force png
         save_path = os.path.join(save_dir,img_name)
+        if os.path.exists(save_path):
+            continue
         if not os.path.exists(img_path):
             continue
         zoe_run(zoe_model,img_path,save_path)
